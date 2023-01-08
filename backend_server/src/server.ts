@@ -1,6 +1,6 @@
-import * as express from 'express'
+import * as express from 'express';
 import * as bodyParser from 'body-parser';
-import * as router_main from './router/main'
+import * as router_main from './router/routerMain';
 const app = express();
 
 app.use(bodyParser.json());

@@ -15,4 +15,12 @@ export function addUser(req: express.Request, res: express.Response) {
     });
 }
 
+export function unlock(req: express.Request, res: express.Response) {
+    const body = req.body;
+    return res.status(200).json({
+        status: 200,
+        message: `Unlocked.`
+    });
+}
+
 export default main;
