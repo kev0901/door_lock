@@ -23,4 +23,12 @@ export function unlock(req: express.Request, res: express.Response) {
     });
 }
 
+export function adminLogin(req: express.Request, res: express.Response) {
+    const body = req.body;
+    return res.status(200).json({
+        status: 200,
+        message: `Admin Page`
+    });
+}
+
 export default main;
