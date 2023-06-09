@@ -8,13 +8,13 @@ const METHOD_TYPE = {   //  todo: use Axios?
     "PUT": "PUT",
     "DELETE": "DELETE"
 }
-interface IRouterList {
+interface IRouter {
     uri: string;
     handler: (req: express.Request, res: express.Response) => any;
     method: typeof METHOD_TYPE[keyof typeof METHOD_TYPE];
 }
 
-const routerList: IRouterList[] = [
+const routerList: IRouter[] = [
     {
         uri: '/',
         handler: basic_handler.main,
@@ -28,7 +28,7 @@ const routerList: IRouterList[] = [
     {
         uri: '/unlock',
         handler: basic_handler.unlock,
-        method: METHOD_TYPE.GET
+        method: METHOD_TYPE.POST
     },
 ]
 

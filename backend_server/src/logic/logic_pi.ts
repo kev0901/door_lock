@@ -1,0 +1,63 @@
+import { TCb1 } from '../common/interface';
+import { REQUEST_RETRY_COUNT, REQUEST_RETRY_DELAY_MS } from '../common/value';
+import config from '../config';
+import * as db_user from '../database/db_user';
+import axios from 'axios';
+
+function requestToPiServerWithRetry<T>(url: string, reqBody: any, retryCount: number, callBackFunc: TCb1<T | null>) {
+  requestToPiServer<T>(url, reqBody, function (err, resBody) {
+    if (!err) {
+      callBackFunc(null, resBody);
+      return;
+    }
+    /// error cases
+    if (retryCount <= 0) {
+      callBackFunc(err, null);
+    } else {
+      setTimeout(function () {
+        requestToPiServerWithRetry<T>(url, reqBody, retryCount - 1, callBackFunc);
+      }, REQUEST_RETRY_DELAY_MS);
+    }
+  });
+}
+
+function requestToPiServer<T>(url: string, data: any, callBackFunc: TCb1<T | null>) {
+  axios.post(config.PI_SERVER_URL + url, data)
+  .catch(err => {
+    throw err;
+  })
+  .then((response) => {
+    console.log("PiResponse", response);
+    if(response.status !== 200 && response.status !== 201) {
+      throw new Error;
+    }
+
+    callBackFunc(null, response.data);
+  })
+}
+
+export function unlock(userId: string, callBackFunc: (err: NodeJS.ErrnoException | null, isOpened: boolean) => void) {
+  db_user.getUser(userId, (err, user) => {
+    if(err) throw err;
+
+    if(!user) {
+      callBackFunc(null, false)
+      return;
+    }
+
+    requestToPiServerWithRetry('/unlock', null, REQUEST_RETRY_COUNT, (err, body)=> {
+      if(err) {
+        throw err;
+      }
+
+      if(body) { //todo: body check a lil more strictly suchas : body.isOpened
+        callBackFunc(null, true);
+        return;
+      }
+
+      callBackFunc(null, false);
+    })
+  })
+  //db check
+  //unlock api request
+}

@@ -1,4 +1,4 @@
-#!/Users/gyeongbinchoi/door_lock/raspberryPi_flask/venv/bin/python3.10
+#!/Users/gyeongbinchoi/door_lock/raspberryPi_flask/venv/bin/python3.11
 # -*- coding: utf-8 -*-
 import re
 import sys

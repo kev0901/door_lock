@@ -1,0 +1,6 @@
+{
+  "verbose": true,
+  "watch": [
+    "gen/server.js"
+  ]
+}

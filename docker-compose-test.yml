@@ -1,0 +1,116 @@
+version: "2"
+services:
+  mysql:
+    platform: linux/x86_64
+    image: mysql:5.7.38
+    container_name: mysql_master
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./database/database.sql:/docker-entrypoint-initdb.d/00_db.sql:ro
+    environment:
+      - MYSQL_ROOT_PASSWORD=password
+    command: mysqld --max_connections=300 --innodb_print_all_deadlocks=ON
+
+  # admin:
+  #   build:
+  #     context: ./docker/
+  #     dockerfile: Dockerfile_nodemon
+  #   image: nodemon_ts:18.12.1-alpine-ts4.8.2
+  #   container_name: v3_admin
+  #   ports:
+  #     - "21000:21000"
+  #   volumes:
+  #     - ./server:/ROOT
+  #     - ./waitforit-linux_amd64_v2.2.0:/waitforit:ro
+  #     - ./waitforit-config.json:/waitforit-config.json:ro
+  #   depends_on:
+  #     - redis_cluster_node_5
+  #     - mysql_master
+  #     - logic
+  #   environment:
+  #     - LOGIC_SERVER_URL=http://logic:20001
+  #     - LOGIC_MYSQL_MASTER=mysql://mysql_master:3306/slots_db
+  #     - ADMIN_MYSQL_MASTER=mysql://mysql_master:3306/slots_admin
+  #     - MYSQL_USER=root
+  #     - MYSQL_PASSWORD=iLov3Ba6el
+  #     - REDIS_URLS=redis://redis_cluster_node_0:6379,redis://redis_cluster_node_1:6379,redis://redis_cluster_node_2:6379
+  #     - SSO_SERVER_URL=http://sso:4882
+  #     - NODE_ENV=development
+  #     - DEBUG_COLORS=1
+  #     - FIREHOSE_ACCESS_KEY=AKIAIRM2FR7GQCKIORGQ
+  #     - FIREHOSE_SECRET_KEY=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
+  #     - FIREHOSE_REGION=us-west-2
+  #     - ONESIGNAL_APP_ID=d3818ad5-d87f-4ca0-a067-0a53af0047e7
+  #     - ONESIGNAL_APP_API_KEY=YWQ4YjFhZTUtZmVlZC00YjZjLTllMjctOTkzZWQ2MDcxN2Rm
+  #     - WORKER_QUEUE_URL=http://fakesqs:5882/logic
+  #     - SENDGRID_API_KEY=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
+  #     - BUCKS_BACKEND_SERVER_URL=http://bucks_backend:30000
+  #     - X_BYPASS_KEY=TLyyKPgj6oeCgsVntrBBn3hqsFmp
+  #     - SLOTS_API_SIGNATURE_SUBSTITUTE_TOKEN=@-W_z*bcu9ARLJ2wcNsc
+  #   working_dir: /ROOT
+  #   command: /waitforit -file /waitforit-config.json -- nodemon --config nodemon_admin_gen.json gen/ADMIN/admin_server.js
+
+  backend_server:
+    build:
+      context: ./backend_server/
+      dockerfile: Dockerfile_nodemon
+    # image: node_pnpm:16.16.0-pnpm7.13.4
+    # image: nodemon_ts:18.12.1-alpine-ts4.8.2
+    container_name: backend_server
+    ports:
+      - "3001:3000"
+    volumes:
+      - ./backend_server:/ROOT
+    depends_on:
+      - mysql
+      - fake_pi
+    environment:
+      - MYSQL_HOST=mysql
+      - MYSQL_SCHEMA=database
+      - MYSQL_PORT=3306
+      - MYSQL_USER=root
+      - MYSQL_PASSWORD=password
+      - PI_SERVER_URL=http://fake_pi:5000
+    working_dir: /ROOT
+    command: nodemon gen/server.js
+    # command: nodemon --watch gen/server.js
+    # command: node gen/server.js
+    # command: nodemon --config nodemon_backend.json gen/server.js
+
+  # poll:
+  #   build:
+  #     context: ./docker/
+  #     dockerfile: Dockerfile_pnpm
+  #   image: node_pnpm:16.16.0-pnpm7.13.4
+  #   container_name: poll
+  #   ports:
+  #     - "10200:10200"
+  #   command: /waitforit -file /waitforit-config-bucks.json -- pnpm start:dev #todo: change to poll
+  #   volumes:
+  #     - ./poll:/app
+  #     - ./waitforit-linux_amd64_v2.2.0:/waitforit:ro
+  #     - ./waitforit-config-bucks.json:/waitforit-config-bucks.json:ro # todo: poll
+  #   working_dir: /app
+  #   depends_on:
+  #     - mysql_master
+  #     - logic
+  #   environment:
+  #     - MYSQL_HOST=mysql_master
+  #     - MYSQL_USERNAME=root
+  #     - MYSQL_PASSWORD=iLov3Ba6el
+  #     - REDIS_URLS=redis://redis_cluster_node_0:6379,redis://redis_cluster_node_1:6379,redis://redis_cluster_node_2:6379
+
+  fake_pi:
+    container_name: fake_pi
+    build: ./raspberryPi_flask
+    ports:
+      - "8000:5000"
+
+    # image: python:3.8-slim
+    # # volumes:
+    # #   - ./raspberryPi_flask:/ROOT
+    # depends_on:
+    #   - backend_server
+    # environment:
+    #   - BACKEND_SERVER_URL=http://backend_server:3000
