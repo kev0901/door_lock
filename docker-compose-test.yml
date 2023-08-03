@@ -79,7 +79,8 @@ services:
       - MYSQL_PASSWORD=password
       - PI_SERVER_URL=http://fake_pi:5000
     working_dir: /ROOT
-    command: nodemon gen/server.js
+    command: nodemon --config nodemon_backend.json gen/server.js
+    # command: nodemon gen/server.js
     # command: nodemon --watch gen/server.js
     # command: node gen/server.js
     # command: nodemon --config nodemon_backend.json gen/server.js
