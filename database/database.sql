@@ -1,5 +1,6 @@
 CREATE SCHEMA IF NOT EXISTS `database` DEFAULT CHARACTER SET utf8 ;
-USE `database` ;
+CREATE SCHEMA IF NOT EXISTS `keycloak` DEFAULT CHARACTER SET utf8 ;
+-- USE `database` ;
 
 -- -----------------------------------------------------
 -- Table `db`.`user`
