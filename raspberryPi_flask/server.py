@@ -6,7 +6,7 @@ app = Flask(__name__)
 def health():
     return ('Healthy!')
 
-@app.route('/unlock')
+@app.route('/unlock', methods=['POST'])
 def unlock():
     return ('Unlocked!')
 
