@@ -13,11 +13,15 @@ services:
       HEALTH_CHECK_SUCCESS: "mysqld is alive"
     command: mysqld --max_connections=300 --innodb_print_all_deadlocks=ON
     healthcheck:
-      test: ['CMD-SHELL', 'healthCheckMessage=$(mysqladmin ping --password=$$MYSQL_ROOT_PASSWORD) && echo $$healthCheckMessage && if [ "$$healthCheckMessage" = "$$HEALTH_CHECK_SUCCESS" ] ; then exit 0; else exit 1; fi']
+      test:
+        [
+          "CMD-SHELL",
+          'healthCheckMessage=$(mysqladmin ping --password=$$MYSQL_ROOT_PASSWORD) && echo $$healthCheckMessage && if [ "$$healthCheckMessage" = "$$HEALTH_CHECK_SUCCESS" ] ; then exit 0; else exit 1; fi',
+        ]
       interval: 10s
       timeout: 2s
       retries: 100
-      
+
   # admin:
   #   build:
   #     context: ./docker/
@@ -78,6 +82,7 @@ services:
       - MYSQL_USER=root
       - MYSQL_PASSWORD=password
       - PI_SERVER_URL=http://fake_pi:5000
+      - AUTH_SERVER_URL=http://auth:8080
     working_dir: /ROOT
     command: nodemon --config nodemon_backend.json gen/server.js
     # command: nodemon gen/server.js
@@ -88,13 +93,13 @@ services:
   auth:
     image: quay.io/keycloak/keycloak:22.0.1
     container_name: auth
-    ports: 
+    ports:
       - "5050:8080"
     volumes:
       - ./auth/keycloak.conf:/opt/keycloak/conf/keycloak.conf
     environment:
       - KEYCLOAK_ADMIN=admin
-      - KEYCLOAK_ADMIN_PASSWORD=password  
+      - KEYCLOAK_ADMIN_PASSWORD=password
     depends_on:
       mysql:
         condition: service_healthy
