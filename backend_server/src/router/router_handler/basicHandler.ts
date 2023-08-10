@@ -40,7 +40,7 @@ export function addUser(req: express.Request, res: express.Response) {
 
     return res.status(200).json({
       status: 200,
-      message: `Tryna add ${username}`,
+      message: `Success`,
     });
   });
 }

@@ -27,11 +27,6 @@ const routerList: IRouter[] = [
     handler: basic_handler.addUser,
     method: METHOD_TYPE.POST,
   },
-  {
-    uri: "/unlock",
-    handler: basic_handler.unlock,
-    method: METHOD_TYPE.POST,
-  },
 ];
 
 routerList.forEach((eachRouter) => {
