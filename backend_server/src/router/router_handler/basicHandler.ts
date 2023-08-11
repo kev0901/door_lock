@@ -46,19 +46,10 @@ export function addUser(req: express.Request, res: express.Response) {
 }
 
 export function unlock(req: express.Request, res: express.Response) {
-  const { body } = req;
-  const userId = body.user_id;
-
-  let isValid = true;
-  isValid = isValid && userId;
-
-  if (!isValid) {
-    return res.status(500).json({
-      message: "error happened",
-    });
-  }
-  logic_pi.unlock(userId, (err, isOpened) => {
+  logic_pi.unlock((err, isOpened) => {
     if (err) {
+      /* eslint-disable-next-line no-console */
+      console.log(err);
       return res.status(500).json({
         message: "error happened",
       });

@@ -2,7 +2,8 @@ import axios from "axios";
 import { TCb1 } from "../common/interface";
 import { REQUEST_RETRY_COUNT, REQUEST_RETRY_DELAY_MS } from "../common/value";
 import config from "../config";
-import * as db_user from "../database/db_user";
+import * as logic_assert from "./logic_assert";
+// import * as db_user from "../database/db_user";
 
 function requestToPiServer<T>(url: string, data: any, callBackFunc: TCb1<T | null>) {
   axios
@@ -41,34 +42,42 @@ function requestToPiServerWithRetry<T>(
   });
 }
 
-export function unlock(
-  userId: string,
-  callBackFunc: (err: NodeJS.ErrnoException | null, isOpened: boolean) => void,
-) {
-  db_user.getUser(userId, (err, user) => {
-    if (err) throw err;
+export function unlock(callBackFunc: (err: NodeJS.ErrnoException | null, isOpened: boolean) => void) {
+  requestToPiServerWithRetry("/unlock", null, REQUEST_RETRY_COUNT, (err) => {
+    if (logic_assert.logError(err, callBackFunc)) return;
 
-    if (!user) {
-      callBackFunc(null, false);
-      return;
-    }
-
-    requestToPiServerWithRetry("/unlock", null, REQUEST_RETRY_COUNT, (err2, body) => {
-      if (err2) {
-        throw err2;
-      }
-
-      if (body) {
-        // todo: body check a lil more strictly suchas : body.isOpened
-        callBackFunc(null, true);
-        return;
-      }
-
-      callBackFunc(null, false);
-    });
+    callBackFunc(null, true);
   });
-  // db check
-  // unlock api request
 }
+
+// export function unlock(
+//   userId: string,
+//   callBackFunc: (err: NodeJS.ErrnoException | null, isOpened: boolean) => void,
+// ) {
+//   db_user.getUser(userId, (err, user) => {
+//     if (err) throw err;
+
+//     if (!user) {
+//       callBackFunc(null, false);
+//       return;
+//     }
+
+//     requestToPiServerWithRetry("/unlock", null, REQUEST_RETRY_COUNT, (err2, body) => {
+//       if (err2) {
+//         throw err2;
+//       }
+
+//       if (body) {
+//         // todo: body check a lil more strictly suchas : body.isOpened
+//         callBackFunc(null, true);
+//         return;
+//       }
+
+//       callBackFunc(null, false);
+//     });
+//   });
+//   // db check
+//   // unlock api request
+// }
 
 export default unlock;
