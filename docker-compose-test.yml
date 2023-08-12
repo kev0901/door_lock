@@ -82,7 +82,7 @@ services:
       - MYSQL_USER=root
       - MYSQL_PASSWORD=password
       - PI_SERVER_URL=http://fake_pi:5000
-      - AUTH_SERVER_URL=http://auth:8080
+      - AUTH_SERVER_URL=http://192.168.35.143:5050
     working_dir: /ROOT
     command: nodemon --config nodemon_backend.json gen/server.js
     # command: nodemon gen/server.js

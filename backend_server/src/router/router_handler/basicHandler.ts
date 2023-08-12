@@ -47,6 +47,7 @@ export function addUser(req: express.Request, res: express.Response) {
 
 export function unlock(req: express.Request, res: express.Response) {
   logic_pi.unlock((err, isOpened) => {
+    // todo: error handling somehow doesn't work accurately
     if (err) {
       /* eslint-disable-next-line no-console */
       console.log(err);

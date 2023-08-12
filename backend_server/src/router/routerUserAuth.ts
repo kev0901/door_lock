@@ -10,7 +10,7 @@ const keycloak = new Keycloak(
   {
     realm: "quickstart",
     "bearer-only": true,
-    "auth-server-url": "http://host.docker.internal:5050",
+    "auth-server-url": "http://192.168.35.143:5050",
     "ssl-required": "external",
     resource: "door_lock",
     "confidential-port": "null",
