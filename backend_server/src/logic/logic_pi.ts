@@ -7,16 +7,17 @@ import * as logic_assert from "./logic_assert";
 
 function requestToPiServer<T>(url: string, data: any, callBackFunc: TCb1<T | null>) {
   axios
-    .post(config.PI_SERVER_URL + url, data)
-    .catch((err) => {
-      throw err;
-    })
+    .post(config.PI_SERVER_URL + url, data, { timeout: 5000 })
     .then((response) => {
-      if (response.status !== 200 && response.status !== 201) {
-        throw new Error();
+      if (response?.status < 200 && response?.status >= 300) {
+        const newErr = new Error(response.data);
+        callBackFunc(newErr, response.data);
       }
 
       callBackFunc(null, response.data);
+    })
+    .catch((err) => {
+      logic_assert.logError(err, callBackFunc);
     });
 }
 

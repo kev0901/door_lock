@@ -28,6 +28,7 @@ function getTokenFromAuthServer(callBackFunc: TCb1<string>) {
     method: "post",
     headers,
     data: qs.stringify(config.token),
+    timeout: 5000,
   })
     .then((response) => {
       callBackFunc(null, response.data.access_token);
@@ -58,10 +59,12 @@ function requestToAuthServer<T>(
       data: JSON.stringify(data),
       params,
       method,
+      timeout: 5000,
     })
       .then((response) => {
         if (response?.status < 200 && response?.status >= 300) {
-          throw new Error();
+          const newErr = new Error(response.data);
+          callBackFunc(newErr, response.data);
         }
 
         callBackFunc(null, response.data);
