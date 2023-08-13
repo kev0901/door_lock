@@ -1,4 +1,3 @@
-import 'package:app/widget/homeScreen.dart';
 import 'package:app/widget/loginField.dart';
 import 'package:flutter/material.dart';
 
@@ -30,38 +29,21 @@ class Main extends StatefulWidget {
 class _MainState extends State<Main> {
   bool isLoggedIn = false;
 
-  void navigateToHomeScreen() {
-    Navigator.pushAndRemoveUntil(context, MaterialPageRoute(
-      builder: (context) {
-        return const HomeScreen();
-      },
-    ), (route) => false);
-  }
-
   @override
   void initState() {
-    if (isLoggedIn) {
-      navigateToHomeScreen();
-    }
+    // if (isLoggedIn) {
+    //   navigateToHomeScreen();
+    // }
+    // todo: remember me 체크. - 로딩
+    // id/pw 정보 확인 - 로딩
+    // 로그인 정상적으로 되는지 체크 - 로딩
+    // Futurebuilder로 위의 정보들 따라 잠깐씩 로딩화면 넣어주기
+    // token 생기면 계속. 안되면 그냥 화면 보여주기.
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
     return LoginField();
-    // return HomeScreen();
-    // return Scaffold(
-    //   appBar: AppBar(
-    //     title: Text(widget.title),
-    //   ),
-    //   body: Center(
-    //     child: IconButton(
-    //       onPressed: () {
-    //         navigateToHomeScreen();
-    //       },
-    //       icon: const Icon(Icons.check),
-    //     ),
-    //   ),
-    // );
   }
 }

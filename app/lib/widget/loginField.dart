@@ -1,3 +1,6 @@
+import 'dart:convert';
+import 'package:app/type/keycloak_token.dart';
+import 'package:app/widget/passwordInput.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:app/widget/homeScreen.dart';
@@ -10,7 +13,7 @@ class LoginField extends StatefulWidget {
 }
 
 class _LoginFieldState extends State<LoginField> {
-  final String baseUrl = 'http://192.168.35.143:5050';
+  final String baseUrl = 'http://192.168.35.191:5050';
 
   late bool passwordVisible;
 
@@ -18,6 +21,7 @@ class _LoginFieldState extends State<LoginField> {
   final pwTextController = TextEditingController();
 
   late bool rememberMe; // todo: this is got from sharedPreference
+  late keycloak_token token;
 
   @override
   void initState() {
@@ -30,10 +34,12 @@ class _LoginFieldState extends State<LoginField> {
     return Uri.parse('$baseUrl/$cmd');
   }
 
-  void navigateToHomeScreen() {
+  void navigateToHomeScreen(keycloak_token token) {
     Navigator.pushAndRemoveUntil(context, MaterialPageRoute(
       builder: (context) {
-        return const HomeScreen();
+        return HomeScreen(
+          token: token,
+        );
       },
     ), (route) => false);
   }
@@ -56,9 +62,10 @@ class _LoginFieldState extends State<LoginField> {
       },
     );
     if (response.statusCode >= 200 && response.statusCode < 300) {
-      navigateToHomeScreen();
-    }
-    if (context.mounted &&
+      final responseBody = jsonDecode(response.body);
+      token = keycloak_token.fromJson(responseBody);
+      navigateToHomeScreen(token);
+    } else if (context.mounted &&
         (response.statusCode < 200 || response.statusCode >= 300)) {
       showDialog(
         context: context,
@@ -77,6 +84,12 @@ class _LoginFieldState extends State<LoginField> {
         },
       );
     }
+  }
+
+  void clickPasswordVisible() {
+    setState(() {
+      passwordVisible = !passwordVisible;
+    });
   }
 
   @override
@@ -107,28 +120,11 @@ class _LoginFieldState extends State<LoginField> {
             const SizedBox(
               height: 20,
             ),
-            SizedBox(
-              width: 350,
-              child: TextField(
-                obscureText: !passwordVisible,
-                enableSuggestions: false,
-                autocorrect: false,
-                controller: pwTextController,
-                decoration: InputDecoration(
-                  labelText: 'Password',
-                  suffixIcon: IconButton(
-                    icon: Icon(
-                      passwordVisible ? Icons.visibility : Icons.visibility_off,
-                      color: Theme.of(context).primaryColorDark,
-                    ),
-                    onPressed: () {
-                      setState(() {
-                        passwordVisible = !passwordVisible;
-                      });
-                    },
-                  ),
-                ),
-              ),
+            PasswordInput(
+              controller: pwTextController,
+              onPressed: clickPasswordVisible,
+              passwordVisible: passwordVisible,
+              labelText: 'Password',
             ),
             const SizedBox(
               height: 20,
