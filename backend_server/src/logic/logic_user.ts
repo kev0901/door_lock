@@ -128,7 +128,7 @@ export function changePassword(username: string, password: string, callBackFunc:
 
     const userId = userInfo.id;
     if (!userId) {
-      logic_assert.logWithNewErrorMsg("changePassword, userInfo is worng", callBackFunc);
+      logic_assert.logWithNewErrorMsg("changePassword, userInfo is wrong", callBackFunc);
       return;
     }
 

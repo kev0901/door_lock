@@ -45,6 +45,37 @@ export function addUser(req: express.Request, res: express.Response) {
   });
 }
 
+export function changePassword(req: express.Request, res: express.Response) {
+  const { body } = req;
+
+  const { username, password } = body;
+
+  let isValid = true;
+  isValid = isValid && username;
+  isValid = isValid && password;
+
+  if (!isValid) {
+    return res.status(500).json({
+      message: "Please check username and password",
+    });
+  }
+
+  logic_user.changePassword(username, password, (err) => {
+    if (err) {
+      /* eslint-disable-next-line no-console */
+      console.log(err);
+      return res.status(500).json({
+        message: JSON.stringify(err),
+      });
+    }
+
+    return res.status(200).json({
+      status: 200,
+      message: `Success`,
+    });
+  });
+}
+
 export function unlock(req: express.Request, res: express.Response) {
   logic_pi.unlock((err, isOpened) => {
     // todo: error handling somehow doesn't work accurately

@@ -1,8 +1,8 @@
 import 'package:app/type/keycloak_token.dart';
+import 'package:app/value/value.dart';
 import 'package:app/widget/drawer.dart';
 import 'package:app/widget/showDialogCollections.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 
 class HomeScreen extends StatelessWidget {
   final keycloak_token token;
@@ -10,20 +10,16 @@ class HomeScreen extends StatelessWidget {
     super.key,
     required this.token,
   });
-  final String user_auth_address = 'http://127.0.0.1:3001';
-  Uri getUri(String cmd) {
-    return Uri.parse('$user_auth_address/$cmd');
-  }
 
   void onUnlock(BuildContext context) async {
     showLoadingDialog(context);
-    final response = await http.post(getUri('user_auth/unlock'), headers: {
-      'Authorization': 'Bearer ${token.access_token}',
-    });
+    final response =
+        await postToBackendServerWithAuth('user_auth/unlock', token, {});
     if (context.mounted) {
       endLoadingDialog(context);
       if (response.statusCode >= 200 && response.statusCode < 300) {
         showTextDialog(context, 'Unlocked!');
+        return;
       }
       showTextDialog(context, response.body);
     }

@@ -1,9 +1,9 @@
 import 'dart:convert';
 import 'package:app/type/keycloak_token.dart';
+import 'package:app/value/value.dart';
 import 'package:app/widget/passwordInput.dart';
 import 'package:app/widget/showDialogCollections.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 import 'package:app/widget/homeScreen.dart';
 
 class LoginField extends StatefulWidget {
@@ -14,8 +14,6 @@ class LoginField extends StatefulWidget {
 }
 
 class _LoginFieldState extends State<LoginField> {
-  final String baseUrl = 'http://192.168.35.191:5050';
-
   late bool passwordVisible;
 
   final idTextController = TextEditingController();
@@ -31,10 +29,6 @@ class _LoginFieldState extends State<LoginField> {
     super.initState();
   }
 
-  Uri getUri(String cmd) {
-    return Uri.parse('$baseUrl/$cmd');
-  }
-
   void navigateToHomeScreen(keycloak_token token) {
     Navigator.pushAndRemoveUntil(context, MaterialPageRoute(
       builder: (context) {
@@ -48,21 +42,8 @@ class _LoginFieldState extends State<LoginField> {
   void tryLogin(BuildContext context) async {
     // Navigator.of(context).push(/*waiting dialog */); <= 이건 위에 모션같은거 띄울때 쓰자.
     showLoadingDialog(context);
-    const command = 'realms/quickstart/protocol/openid-connect/token';
-    final response = await http.post(
-      getUri(command),
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
-      },
-      // encoding: Encoding.getByName('utf-8'),
-      body: {
-        "username": idTextController.text,
-        "grant_type": "password",
-        "password": pwTextController.text,
-        "realmName": "quickstart", // todo: add quickstart to real realm name
-        "client_id": "test-cli", // todo: real client
-      },
-    );
+    final response = await getTokenWithUsernameAndPw(
+        idTextController.text, pwTextController.text);
     if (context.mounted) {
       endLoadingDialog(context);
       if (response.statusCode >= 200 && response.statusCode < 300) {
@@ -121,7 +102,7 @@ class _LoginFieldState extends State<LoginField> {
             const SizedBox(
               height: 20,
             ),
-            Container(
+            SizedBox(
               width: 350,
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -169,7 +150,7 @@ class _LoginFieldState extends State<LoginField> {
                 ],
               ),
             ),
-            SizedBox(
+            const SizedBox(
               height: 40,
             ),
             const Text('Are you new here?'),
