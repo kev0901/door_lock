@@ -1,5 +1,6 @@
 import 'package:app/type/keycloak_token.dart';
 import 'package:app/widget/drawer.dart';
+import 'package:app/widget/showDialogCollections.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
@@ -15,41 +16,16 @@ class HomeScreen extends StatelessWidget {
   }
 
   void onUnlock(BuildContext context) async {
-    final response = await http.get(getUri('user_auth/unlock'));
+    showLoadingDialog(context);
+    final response = await http.post(getUri('user_auth/unlock'), headers: {
+      'Authorization': 'Bearer ${token.access_token}',
+    });
     if (context.mounted) {
+      endLoadingDialog(context);
       if (response.statusCode >= 200 && response.statusCode < 300) {
-        showDialog(
-            context: context,
-            builder: (BuildContext context) {
-              return AlertDialog(
-                content: const Text('Unlocked!'),
-                actions: [
-                  TextButton(
-                    child: const Text('Ok'),
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                    },
-                  ),
-                ],
-              );
-            });
+        showTextDialog(context, 'Unlocked!');
       }
-      showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            content: Text(response.body),
-            actions: [
-              TextButton(
-                child: const Text('Ok'),
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-              ),
-            ],
-          );
-        },
-      );
+      showTextDialog(context, response.body);
     }
   }
 

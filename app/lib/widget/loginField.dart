@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:app/type/keycloak_token.dart';
 import 'package:app/widget/passwordInput.dart';
+import 'package:app/widget/showDialogCollections.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:app/widget/homeScreen.dart';
@@ -46,6 +47,7 @@ class _LoginFieldState extends State<LoginField> {
 
   void tryLogin(BuildContext context) async {
     // Navigator.of(context).push(/*waiting dialog */); <= 이건 위에 모션같은거 띄울때 쓰자.
+    showLoadingDialog(context);
     const command = 'realms/quickstart/protocol/openid-connect/token';
     final response = await http.post(
       getUri(command),
@@ -61,28 +63,18 @@ class _LoginFieldState extends State<LoginField> {
         "client_id": "test-cli", // todo: real client
       },
     );
-    if (response.statusCode >= 200 && response.statusCode < 300) {
-      final responseBody = jsonDecode(response.body);
-      token = keycloak_token.fromJson(responseBody);
-      navigateToHomeScreen(token);
-    } else if (context.mounted &&
-        (response.statusCode < 200 || response.statusCode >= 300)) {
-      showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            content: Text('StatusCode: ${response.statusCode}'),
-            actions: [
-              TextButton(
-                child: Text(response.body),
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-              ),
-            ],
-          );
-        },
-      );
+    if (context.mounted) {
+      endLoadingDialog(context);
+      if (response.statusCode >= 200 && response.statusCode < 300) {
+        final responseBody = jsonDecode(response.body);
+        token = keycloak_token.fromJson(responseBody);
+        navigateToHomeScreen(token);
+      } else {
+        showTextDialog(
+          context,
+          'StatusCode: ${response.statusCode}\n${response.body}',
+        );
+      }
     }
   }
 
