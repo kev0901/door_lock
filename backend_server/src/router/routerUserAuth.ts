@@ -42,6 +42,11 @@ const routerList: IRouter[] = [
     handler: basic_handler.changePassword,
     method: METHOD_TYPE.POST,
   },
+  {
+    uri: "/delete_account",
+    handler: basic_handler.deleteUser,
+    method: METHOD_TYPE.POST,
+  },
 ];
 
 routerList.forEach((eachRouter) => {

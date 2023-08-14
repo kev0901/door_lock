@@ -13,6 +13,9 @@ import * as logic_assert from "./logic_assert";
 
 const userUrl = "/admin/realms/quickstart/users";
 const getTokenUrl = "/realms/quickstart/protocol/openid-connect/token";
+function deleteUserUrl(userId: string) {
+  return `/admin/realms/quickstart/users/${userId}`;
+}
 function changePasswordUrl(userId: string) {
   return `/admin/realms/quickstart/users/${userId}/reset-password`;
 }
@@ -169,5 +172,13 @@ export function addUser(
     if (logic_assert.logError(err, callBackFunc)) return;
 
     changePassword(username, password, callBackFunc);
+  });
+}
+
+export function deleteUser(userId: string, callBackFunc: TCb) {
+  requestToAuthServerWithRetry(deleteUserUrl(userId), null, null, "delete", REQUEST_RETRY_COUNT, (err) => {
+    if (logic_assert.logError(err, callBackFunc)) return;
+
+    callBackFunc(null);
   });
 }

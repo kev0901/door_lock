@@ -15,8 +15,8 @@ class HomeScreenDrawer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final decodedToken = JwtDecoder.decode(token.access_token);
-    String email = decodedToken['email'];
-    String fullName = decodedToken['name'];
+    String email = decodedToken['email'] ?? '';
+    String fullName = decodedToken['name'] ?? '';
     return Drawer(
       child: ListView(
         padding: EdgeInsets.zero,

@@ -98,3 +98,33 @@ export function unlock(req: express.Request, res: express.Response) {
     });
   });
 }
+
+export function deleteUser(req: express.Request, res: express.Response) {
+  const { body } = req;
+
+  const { userId } = body;
+
+  let isValid = true;
+  isValid = isValid && userId;
+
+  if (!isValid) {
+    return res.status(500).json({
+      message: "Please check User ID",
+    });
+  }
+
+  logic_user.deleteUser(userId, (err) => {
+    if (err) {
+      /* eslint-disable-next-line no-console */
+      console.log(err);
+      return res.status(500).json({
+        message: JSON.stringify(err),
+      });
+    }
+
+    return res.status(200).json({
+      status: 200,
+      message: `Successfully deleted.`,
+    });
+  });
+}

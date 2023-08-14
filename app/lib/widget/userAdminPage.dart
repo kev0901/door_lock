@@ -3,10 +3,71 @@ import 'dart:convert';
 import 'package:app/type/keycloak_token.dart';
 import 'package:app/value/value.dart';
 import 'package:app/widget/drawer.dart';
+import 'package:app/widget/loginField.dart';
 import 'package:app/widget/passwordInput.dart';
 import 'package:app/widget/showDialogCollections.dart';
 import 'package:flutter/material.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
+
+class AdminPageListTitle extends StatelessWidget {
+  final String title;
+  const AdminPageListTitle({super.key, required this.title});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.start,
+      children: [
+        const SizedBox(
+          width: 20,
+        ),
+        Text(
+          title,
+          style: const TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class AdminPageListButton extends StatelessWidget {
+  late void Function() onPressed;
+  late Color buttonColor;
+  late Color titleColor;
+  late String buttonText;
+  AdminPageListButton({
+    super.key,
+    required this.buttonColor,
+    required this.onPressed,
+    required this.titleColor,
+    required this.buttonText,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.end,
+      children: [
+        TextButton(
+          onPressed: onPressed,
+          style: ButtonStyle(
+            backgroundColor: MaterialStatePropertyAll(buttonColor),
+          ),
+          child: Text(
+            buttonText,
+            style: TextStyle(color: titleColor),
+          ),
+        ),
+        const SizedBox(
+          width: 30,
+        )
+      ],
+    );
+  }
+}
 
 class UserAdminPage extends StatefulWidget {
   late keycloak_token token;
@@ -26,11 +87,15 @@ class _UserAdminPageState extends State<UserAdminPage> {
 
   bool newPwConfirmVisible = false;
 
+  bool cur2PwVisible = false;
+
   final currentPwTextController = TextEditingController();
 
   final newPwTextController = TextEditingController();
 
   final newPwConfirmTextController = TextEditingController();
+
+  final currentPwTextController2 = TextEditingController();
 
   String username = '';
 
@@ -52,14 +117,13 @@ class _UserAdminPageState extends State<UserAdminPage> {
     });
   }
 
-  void clickCur() {
+  void toggleCur2Visible() {
     setState(() {
-      curPwVisible = !curPwVisible;
+      cur2PwVisible = !cur2PwVisible;
     });
   }
 
-  Future<bool> tryGetNewTokenAndReturnSuccessOrNot() async {
-    String curPw = currentPwTextController.text;
+  Future<bool> tryGetNewTokenAndReturnSuccessOrNot(String curPw) async {
     String usernameFromToken =
         JwtDecoder.decode(widget.token.access_token)['preferred_username'];
     showLoadingDialog(context);
@@ -69,7 +133,12 @@ class _UserAdminPageState extends State<UserAdminPage> {
       endLoadingDialog(context);
       if (!(tokenResponse.statusCode >= 200 &&
           tokenResponse.statusCode < 300)) {
-        showTextDialog(context, 'tryGetNewToken, ${tokenResponse.body}');
+        if (tokenResponse.statusCode == 401) {
+          showTextDialog(context, 'Please check your current password.');
+        } else {
+          showTextDialog(context,
+              'tryGetNewToken, ${tokenResponse.statusCode}, ${tokenResponse.body}');
+        }
         return false;
       }
     }
@@ -83,7 +152,8 @@ class _UserAdminPageState extends State<UserAdminPage> {
   }
 
   void tryPasswordChange() async {
-    bool gotToken = await tryGetNewTokenAndReturnSuccessOrNot();
+    bool gotToken =
+        await tryGetNewTokenAndReturnSuccessOrNot(currentPwTextController.text);
     if (!gotToken) return;
 
     String newPw = newPwTextController.text;
@@ -119,10 +189,68 @@ class _UserAdminPageState extends State<UserAdminPage> {
             currentPwTextController.text = '';
             newPwTextController.text = '';
             newPwConfirmTextController.text = '';
-          });
+          }); // todo: change to restart the page?
           return;
         }
         showTextDialog(context, 'PwChangeResponse, ${pwChangeResponse.body}');
+      }
+    }
+  }
+
+  NavigateToLoginScreen() {
+    // todo: see whether we can change scroll motion direction
+    Navigator.pushAndRemoveUntil(context, MaterialPageRoute(
+      builder: (context) {
+        return LoginField();
+      },
+    ), (route) => false);
+  }
+
+  void AskLogout(BuildContext context) {
+    showWarningDialog(
+      context,
+      'Are you sure you want to logout?',
+      NavigateToLoginScreen,
+    );
+  }
+
+  void AskDelete(BuildContext context) {
+    showWarningDialog(
+      context,
+      'Are you sure you want to delete your account?\nThis action is irreversible.',
+      TryDelete,
+    );
+  }
+
+  void TryDelete() async {
+    bool gotToken = await tryGetNewTokenAndReturnSuccessOrNot(
+        currentPwTextController2.text);
+    if (!gotToken) return;
+
+    String userId = JwtDecoder.decode(widget.token.access_token)['sub'];
+
+    if (context.mounted) {
+      showLoadingDialog(context);
+      final userDeleteResponse = await postToBackendServerWithAuth(
+        'user_auth/delete_account',
+        widget.token,
+        {
+          'userId': userId,
+        },
+      );
+
+      if (context.mounted) {
+        endLoadingDialog(context);
+        if (userDeleteResponse.statusCode >= 200 &&
+            userDeleteResponse.statusCode < 300) {
+          NavigateToLoginScreen();
+          showTextDialog(context, 'Successfully deleted your account.');
+          return;
+        }
+        showTextDialog(
+          context,
+          'userDeleteResponse, ${userDeleteResponse.body}',
+        );
       }
     }
   }
@@ -132,60 +260,94 @@ class _UserAdminPageState extends State<UserAdminPage> {
     return Scaffold(
       backgroundColor: const Color(0xFFFFFFFF),
       appBar: AppBar(
-        title: const Text('Open up, Sesame!'),
+        title: const Text('Account Management'),
       ),
       drawer: HomeScreenDrawer(
         token: widget.token,
       ),
-      body: Column(
-        mainAxisAlignment: MainAxisAlignment.start,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          const SizedBox(
-            height: 100,
-          ),
-          const Text(
-            'Change Password',
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.w600,
+      body: SingleChildScrollView(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            const SizedBox(
+              height: 50,
             ),
-          ),
-          const SizedBox(
-            height: 20,
-          ),
-          PasswordInput(
-            controller: currentPwTextController,
-            onPressed: toggleCurVisible,
-            passwordVisible: curPwVisible,
-            labelText: 'Current Password',
-          ),
-          const SizedBox(
-            height: 20,
-          ),
-          PasswordInput(
-            controller: newPwTextController,
-            onPressed: toggleNewVisible,
-            passwordVisible: newPwVisible,
-            labelText: 'New Password',
-          ),
-          const SizedBox(
-            height: 20,
-          ),
-          PasswordInput(
-            controller: newPwConfirmTextController,
-            onPressed: toggleNewConfirmVisible,
-            passwordVisible: newPwConfirmVisible,
-            labelText: 'New Password Confirmation',
-          ),
-          const SizedBox(
-            height: 20,
-          ),
-          TextButton(
-            onPressed: tryPasswordChange,
-            child: const Text('Change Password'),
-          ),
-        ],
+            const AdminPageListTitle(title: 'Change Password'),
+            const SizedBox(
+              height: 40,
+            ),
+            PasswordInput(
+              controller: currentPwTextController,
+              onPressed: toggleCurVisible,
+              passwordVisible: curPwVisible,
+              labelText: 'Current Password',
+            ),
+            const SizedBox(
+              height: 20,
+            ),
+            PasswordInput(
+              controller: newPwTextController,
+              onPressed: toggleNewVisible,
+              passwordVisible: newPwVisible,
+              labelText: 'New Password',
+            ),
+            const SizedBox(
+              height: 20,
+            ),
+            PasswordInput(
+              controller: newPwConfirmTextController,
+              onPressed: toggleNewConfirmVisible,
+              passwordVisible: newPwConfirmVisible,
+              labelText: 'New Password Confirmation',
+            ),
+            const SizedBox(
+              height: 20,
+            ),
+            AdminPageListButton(
+              buttonColor: Colors.blueAccent,
+              onPressed: tryPasswordChange,
+              titleColor: Colors.white,
+              buttonText: 'Change Password',
+            ),
+            const SizedBox(
+              height: 40,
+            ),
+            const AdminPageListTitle(title: 'Logout from this device'),
+            AdminPageListButton(
+              buttonColor: Colors.blueAccent,
+              onPressed: () {
+                AskLogout(context);
+              },
+              titleColor: Colors.white,
+              buttonText: 'Logout',
+            ),
+            const SizedBox(
+              height: 40,
+            ),
+            const AdminPageListTitle(title: 'Delete Your Account'),
+            const SizedBox(
+              height: 10,
+            ),
+            PasswordInput(
+              controller: currentPwTextController2,
+              onPressed: toggleCur2Visible,
+              passwordVisible: cur2PwVisible,
+              labelText: 'Type Current Password to delete your account',
+            ),
+            const SizedBox(
+              height: 10,
+            ),
+            AdminPageListButton(
+              buttonColor: Colors.redAccent,
+              onPressed: () {
+                AskDelete(context);
+              },
+              titleColor: Colors.white,
+              buttonText: 'Delete',
+            ),
+          ],
+        ),
       ),
     );
   }

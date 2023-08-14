@@ -46,3 +46,29 @@ void showTextDialog(BuildContext context, String text) {
     },
   );
 }
+
+void showWarningDialog(
+    BuildContext context, String text, Function() onPressed) {
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        content: Text(text),
+        actions: [
+          TextButton(
+            child: const Text('Ok'),
+            onPressed: () {
+              onPressed();
+            },
+          ),
+          TextButton(
+            child: const Text('No'),
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+          ),
+        ],
+      );
+    },
+  );
+}

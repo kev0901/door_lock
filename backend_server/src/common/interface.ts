@@ -9,7 +9,7 @@ export interface IUser {
 export type TCb = (err: NodeJS.ErrnoException | null) => void;
 export type TCb1<T> = (err: NodeJS.ErrnoException | null, arg: T) => void;
 
-export type TAllowedKeycloakOperation = "get" | "post" | "put";
+export type TAllowedKeycloakOperation = "get" | "post" | "put" | "delete";
 
 export interface IKeycloakUser {
   id: string;
