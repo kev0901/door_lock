@@ -5,6 +5,8 @@ import 'package:app/widget/passwordInput.dart';
 import 'package:app/widget/showDialogCollections.dart';
 import 'package:flutter/material.dart';
 import 'package:app/widget/homeScreen.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginField extends StatefulWidget {
   const LoginField({super.key});
@@ -19,13 +21,41 @@ class _LoginFieldState extends State<LoginField> {
   final idTextController = TextEditingController();
   final pwTextController = TextEditingController();
 
-  late bool rememberMe; // todo: this is got from sharedPreference
+  bool rememberMe = false; // todo: this is got from sharedPreference
   late keycloak_token token;
+
+  static final secureStorage = FlutterSecureStorage();
+
+  void getRememberMeAndTryLogin(BuildContext context) async {
+    showLoadingDialog(context);
+    final SharedPreferences pref = await SharedPreferences.getInstance();
+    final prefRememberMe = pref.getBool('rememberMe');
+    String id = '';
+    String pw = '';
+    if (prefRememberMe == true) {
+      String credentials = await secureStorage.read(key: 'credentials') ?? '';
+      if (credentials.isNotEmpty) {
+        id = credentials.split(' ')[0];
+        pw = credentials.split(' ')[1];
+      }
+    }
+    setState(() {
+      rememberMe = prefRememberMe ?? false;
+      idTextController.text = id;
+      pwTextController.text = pw;
+    });
+    if (context.mounted) {
+      endLoadingDialog(context);
+      if (rememberMe) tryLogin(context);
+    }
+  }
 
   @override
   void initState() {
     passwordVisible = false;
-    rememberMe = false;
+    new Future.delayed(Duration.zero, () {
+      getRememberMeAndTryLogin(context);
+    });
     super.initState();
   }
 
@@ -49,6 +79,16 @@ class _LoginFieldState extends State<LoginField> {
       if (response.statusCode >= 200 && response.statusCode < 300) {
         final responseBody = jsonDecode(response.body);
         token = keycloak_token.fromJson(responseBody);
+
+        if (rememberMe) {
+          final SharedPreferences pref = await SharedPreferences.getInstance();
+          await pref.setBool('rememberMe', true);
+          await secureStorage.write(
+            key: 'credentials',
+            value: '${idTextController.text} ${pwTextController.text}',
+          );
+        }
+
         navigateToHomeScreen(token);
       } else {
         showTextDialog(
