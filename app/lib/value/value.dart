@@ -8,7 +8,7 @@ String AuthServerUrl = 'http://192.168.35.191:5050';
 String GetTokenUrl = 'realms/quickstart/protocol/openid-connect/token';
 
 Uri getUri(String baseUrl, String cmd) {
-  return Uri.parse('$baseUrl /$cmd');
+  return Uri.parse('$baseUrl/$cmd');
 }
 
 Future<http.Response> getTokenWithUsernameAndPw(
@@ -35,6 +35,17 @@ Future<http.Response> postToBackendServerWithAuth(
     getUri(BackendServerUrl, cmdUrl),
     headers: {
       'Authorization': 'Bearer ${token.access_token}',
+      "Content-Type": "application/json",
+    },
+    body: jsonEncode(data),
+  );
+}
+
+Future<http.Response> postToBackendServer(
+    String cmdUrl, Map<String, dynamic> data) async {
+  return http.post(
+    getUri(BackendServerUrl, cmdUrl),
+    headers: {
       "Content-Type": "application/json",
     },
     body: jsonEncode(data),

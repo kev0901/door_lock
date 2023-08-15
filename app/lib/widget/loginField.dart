@@ -65,6 +65,28 @@ class _LoginFieldState extends State<LoginField> {
     });
   }
 
+  void checkId() {}
+
+  void tryRegister(Map<String, dynamic> data) async {
+    showLoadingDialog(context);
+    final registerResponse = await postToBackendServer('addUser', data);
+    if (context.mounted) {
+      endLoadingDialog(context);
+      if (registerResponse.statusCode >= 200 &&
+          registerResponse.statusCode < 300) {
+        // final responseBody = jsonDecode(registerResponse.body);
+        Navigator.pop(context);
+        showTextDialog(context,
+            'Registered Successfully.\nPlease notice administrator to get access granted.');
+      } else {
+        showTextDialog(
+          context,
+          'StatusCode: ${registerResponse.statusCode}\n${registerResponse.body}',
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -155,7 +177,12 @@ class _LoginFieldState extends State<LoginField> {
             ),
             const Text('Are you new here?'),
             TextButton(
-              onPressed: () {},
+              onPressed: () {
+                showDialogForRegister(
+                  context,
+                  tryRegister,
+                );
+              },
               child: const Text(
                 'Sign up',
                 style: TextStyle(fontSize: 15),
