@@ -78,7 +78,7 @@ Future<void> showDialogForRegister(
     BuildContext context, Function(Map<String, dynamic>) onPressed) async {
   TextEditingController idTextController = TextEditingController();
   TextEditingController pwTextController = TextEditingController();
-  TextEditingController newPwTextController = TextEditingController();
+  TextEditingController pwConfirmTextController = TextEditingController();
   TextEditingController emailTextController = TextEditingController();
   TextEditingController firstNameTextController = TextEditingController();
   TextEditingController lastNameTextController = TextEditingController();
@@ -178,7 +178,7 @@ Future<void> showDialogForRegister(
                 height: 20,
               ),
               NewPasswordInput(
-                controller: newPwTextController,
+                controller: pwConfirmTextController,
                 labelText: 'Confirm Password',
                 width: 300,
               ),
@@ -192,6 +192,10 @@ Future<void> showDialogForRegister(
           TextButton(
             child: const Text('Register'),
             onPressed: () async {
+              if (pwTextController.text != pwConfirmTextController.text) {
+                showTextDialog(context, 'Please check your pw.');
+                return;
+              }
               await onPressed({
                 'firstName': firstNameTextController.text,
                 'lastName': lastNameTextController.text,
