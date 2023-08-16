@@ -115,7 +115,7 @@ export function getUserInfo(username: string, callBackFunc: TCb1<IKeycloakUser>)
     (err, res) => {
       if (logic_assert.logError(err, callBackFunc)) return;
 
-      if (res.length < 1) {
+      if (!res) {
         logic_assert.logWithNewErrorMsg("getUserInfo response is wrong", callBackFunc);
         return;
       }
@@ -127,6 +127,10 @@ export function getUserInfo(username: string, callBackFunc: TCb1<IKeycloakUser>)
 
 export function changePassword(username: string, password: string, callBackFunc: TCb) {
   getUserInfo(username, (err, userInfo) => {
+    if (!userInfo) {
+      logic_assert.logWithNewErrorMsg("changePassword, getUserInfo returned nothing", callBackFunc);
+      return;
+    }
     if (logic_assert.logError(err, callBackFunc)) return;
 
     const userId = userInfo.id;

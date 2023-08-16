@@ -4,7 +4,7 @@ import 'package:app/type/keycloak_token.dart';
 import 'package:app/value/value.dart';
 import 'package:app/widget/drawer.dart';
 import 'package:app/widget/loginField.dart';
-import 'package:app/widget/passwordInput.dart';
+import 'package:app/widget/textInput.dart';
 import 'package:app/widget/showDialogCollections.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';

@@ -128,3 +128,39 @@ export function deleteUser(req: express.Request, res: express.Response) {
     });
   });
 }
+
+export function getUserInfo(req: express.Request, res: express.Response) {
+  const { body } = req;
+
+  const { userId: username } = body;
+
+  let isValid = true;
+  isValid = isValid && username;
+
+  if (!isValid) {
+    return res.status(500).json({
+      message: "Please put in ID",
+    });
+  }
+
+  logic_user.getUserInfo(username, (err, userInfo) => {
+    // todo: error handling somehow doesn't work accurately
+    if (err) {
+      /* eslint-disable-next-line no-console */
+      console.log(err);
+      return res.status(500).json({
+        message: "error happened",
+      });
+    }
+
+    if (!userInfo) {
+      return res.status(200).json({
+        message: "Available",
+      });
+    }
+
+    return res.status(200).json({
+      message: "Unavailable",
+    });
+  });
+}

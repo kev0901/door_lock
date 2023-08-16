@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:app/widget/passwordInput.dart';
+import 'package:app/widget/textInput.dart';
 
 void showLoadingDialog(BuildContext context) {
   showDialog(
@@ -165,15 +165,7 @@ Future<void> showDialogForRegister(
                   ),
                 ],
               ),
-              SizedBox(
-                width: 300,
-                child: TextField(
-                  controller: idTextController,
-                  decoration: const InputDecoration(
-                    labelText: 'ID', // todo: add check id buton
-                  ),
-                ),
-              ),
+              IdWithDoubleCheckInput(idTextController: idTextController),
               const SizedBox(
                 height: 20,
               ),

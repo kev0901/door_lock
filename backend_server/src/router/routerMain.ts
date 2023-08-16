@@ -27,6 +27,11 @@ const routerList: IRouter[] = [
     handler: basic_handler.addUser,
     method: METHOD_TYPE.POST,
   },
+  {
+    uri: "/checkId",
+    handler: basic_handler.getUserInfo,
+    method: METHOD_TYPE.POST,
+  },
 ];
 
 routerList.forEach((eachRouter) => {
