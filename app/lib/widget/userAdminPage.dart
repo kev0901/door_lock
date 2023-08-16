@@ -7,7 +7,9 @@ import 'package:app/widget/loginField.dart';
 import 'package:app/widget/passwordInput.dart';
 import 'package:app/widget/showDialogCollections.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class AdminPageListTitle extends StatelessWidget {
   final String title;
@@ -206,12 +208,32 @@ class _UserAdminPageState extends State<UserAdminPage> {
     ), (route) => false);
   }
 
-  void AskLogout(BuildContext context) {
-    showWarningDialog(
+  Future<void> AskLogout(BuildContext context) async {
+    await showWarningDialog(
       context,
       'Are you sure you want to logout?',
-      NavigateToLoginScreen,
+      tryLogout,
     );
+  }
+
+  Future<void> deletePrefAndSecureStorage() async {
+    final SharedPreferences pref = await SharedPreferences.getInstance();
+    const secureStorage = FlutterSecureStorage();
+
+    await pref.setBool('rememberMe', false);
+    await secureStorage.write(
+      key: 'credentials',
+      value: '',
+    );
+  }
+
+  void tryLogout() async {
+    await deletePrefAndSecureStorage();
+
+    NavigateToLoginScreen();
+    if (context.mounted) {
+      showTextDialog(context, 'Successfully logged out from this device.');
+    }
   }
 
   void AskDelete(BuildContext context) {
@@ -243,6 +265,7 @@ class _UserAdminPageState extends State<UserAdminPage> {
         endLoadingDialog(context);
         if (userDeleteResponse.statusCode >= 200 &&
             userDeleteResponse.statusCode < 300) {
+          await deletePrefAndSecureStorage();
           NavigateToLoginScreen();
           showTextDialog(context, 'Successfully deleted your account.');
           return;
@@ -316,8 +339,8 @@ class _UserAdminPageState extends State<UserAdminPage> {
             const AdminPageListTitle(title: 'Logout from this device'),
             AdminPageListButton(
               buttonColor: Colors.blueAccent,
-              onPressed: () {
-                AskLogout(context);
+              onPressed: () async {
+                await AskLogout(context);
               },
               titleColor: Colors.white,
               buttonText: 'Logout',

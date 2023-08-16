@@ -80,12 +80,18 @@ class _LoginFieldState extends State<LoginField> {
         final responseBody = jsonDecode(response.body);
         token = keycloak_token.fromJson(responseBody);
 
+        final SharedPreferences pref = await SharedPreferences.getInstance();
         if (rememberMe) {
-          final SharedPreferences pref = await SharedPreferences.getInstance();
           await pref.setBool('rememberMe', true);
           await secureStorage.write(
             key: 'credentials',
             value: '${idTextController.text} ${pwTextController.text}',
+          );
+        } else {
+          await pref.setBool('rememberMe', false);
+          await secureStorage.write(
+            key: 'credentials',
+            value: '',
           );
         }
 
@@ -217,8 +223,8 @@ class _LoginFieldState extends State<LoginField> {
             ),
             const Text('Are you new here?'),
             TextButton(
-              onPressed: () {
-                showDialogForRegister(
+              onPressed: () async {
+                await showDialogForRegister(
                   context,
                   tryRegister,
                 );

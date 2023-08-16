@@ -48,8 +48,8 @@ void showTextDialog(BuildContext context, String text) {
   );
 }
 
-void showWarningDialog(
-    BuildContext context, String text, Function() onPressed) {
+Future<void> showWarningDialog(
+    BuildContext context, String text, Function() onPressed) async {
   showDialog(
     context: context,
     builder: (BuildContext context) {
@@ -58,8 +58,8 @@ void showWarningDialog(
         actions: [
           TextButton(
             child: const Text('Ok'),
-            onPressed: () {
-              onPressed();
+            onPressed: () async {
+              await onPressed();
             },
           ),
           TextButton(
@@ -74,8 +74,8 @@ void showWarningDialog(
   );
 }
 
-void showDialogForRegister(
-    BuildContext context, Function(Map<String, dynamic>) onPressed) {
+Future<void> showDialogForRegister(
+    BuildContext context, Function(Map<String, dynamic>) onPressed) async {
   TextEditingController idTextController = TextEditingController();
   TextEditingController pwTextController = TextEditingController();
   TextEditingController newPwTextController = TextEditingController();
@@ -199,8 +199,8 @@ void showDialogForRegister(
         actions: [
           TextButton(
             child: const Text('Register'),
-            onPressed: () {
-              onPressed({
+            onPressed: () async {
+              await onPressed({
                 'firstName': firstNameTextController.text,
                 'lastName': lastNameTextController.text,
                 'username': idTextController.text,

@@ -43,12 +43,13 @@ class HomeScreenDrawer extends StatelessWidget {
             ),
             title: const Text('Unlock'),
             onTap: () {
-              Navigator.of(context).push(
+              Navigator.of(context).pushAndRemoveUntil(
                 MaterialPageRoute(
                   builder: (context) => HomeScreen(
                     token: token,
                   ),
                 ),
+                (route) => false,
               );
             },
           ),
@@ -58,12 +59,13 @@ class HomeScreenDrawer extends StatelessWidget {
             ),
             title: const Text('User management'),
             onTap: () {
-              Navigator.of(context).push(
+              Navigator.of(context).pushAndRemoveUntil(
                 MaterialPageRoute(
                   builder: (context) => UserAdminPage(
                     token: token,
                   ),
                 ),
+                (route) => false,
               );
             },
           ),
