@@ -1,9 +1,9 @@
-import { knex, Knex } from 'knex';
-import mysql = require('mysql2');
-import config from '../config';
+import { knex, Knex } from "knex";
+// import * as mysql from "mysql2";
+import config from "../config";
 
 const knexConfig: Knex.Config = {
-  client: 'mysql2',
+  client: "mysql2",
   connection: {
     host: config.MYSQL_HOST,
     port: config.MYSQL_PORT,

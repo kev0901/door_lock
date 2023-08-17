@@ -27,6 +27,7 @@
     ],
     "camelcase": "off",
     "@typescript-eslint/no-explicit-any": "off",
+    "import/prefer-default-export": "off",
     "prettier/prettier": "error"
   },
   "plugins": ["@typescript-eslint"],

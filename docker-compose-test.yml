@@ -72,9 +72,11 @@ services:
       - "3001:3000"
     volumes:
       - ./backend_server:/ROOT
+      - ./auth/resource-server:/keycloak-resource
     depends_on:
       - mysql
       - fake_pi
+      - auth
     environment:
       - MYSQL_HOST=mysql
       - MYSQL_SCHEMA=database
@@ -84,7 +86,7 @@ services:
       - PI_SERVER_URL=http://fake_pi:5000
       - AUTH_SERVER_URL=http://192.168.35.191:5050
     working_dir: /ROOT
-    command: nodemon --config nodemon_backend.json gen/server.js
+    command: sh -c "sleep 10s && node /keycloak-resource/scripts/create-realm.js && echo 'created-realm' && nodemon --config nodemon_backend.json gen/server.js"
     # command: nodemon gen/server.js
     # command: nodemon --watch gen/server.js
     # command: node gen/server.js
